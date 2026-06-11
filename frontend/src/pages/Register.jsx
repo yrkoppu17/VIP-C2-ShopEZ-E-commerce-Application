@@ -46,14 +46,14 @@ const Register = () => {
 
   return (
     <div className="max-w-md mx-auto px-4 py-16">
-      <div className="glass p-8 rounded-3xl border border-slate-800 space-y-6">
+      <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-extrabold text-white">Create Account</h1>
-          <p className="text-sm text-slate-400">Join ShopEZ today</p>
+          <h1 className="text-3xl font-extrabold text-slate-800">Create Account</h1>
+          <p className="text-sm text-slate-500 font-semibold">Join ShopEZ today</p>
         </div>
 
         {submitError && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3.5 rounded-xl text-xs flex items-center space-x-2">
+          <div className="bg-red-50 border border-red-100 text-red-650 p-3.5 rounded-xl text-xs flex items-center space-x-2 font-semibold">
             <ShieldAlert size={16} />
             <span>{submitError}</span>
           </div>
@@ -61,7 +61,7 @@ const Register = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               Full Name
             </label>
             <div className="relative">
@@ -71,14 +71,14 @@ const Register = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
-                className="w-full bg-slate-900 border border-slate-800 focus:border-indigo-500 text-slate-200 rounded-xl py-2.5 pl-10 pr-4 outline-none text-sm transition-all"
+                className="w-full bg-white border border-slate-200 focus:border-indigo-500 text-slate-800 rounded-xl py-2.5 pl-10 pr-4 outline-none text-sm transition-all"
               />
-              <User className="absolute left-3 top-3 text-slate-500" size={16} />
+              <User className="absolute left-3.5 top-3 text-slate-400" size={16} />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               Email Address
             </label>
             <div className="relative">
@@ -88,14 +88,14 @@ const Register = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full bg-slate-900 border border-slate-800 focus:border-indigo-500 text-slate-200 rounded-xl py-2.5 pl-10 pr-4 outline-none text-sm transition-all"
+                className="w-full bg-white border border-slate-200 focus:border-indigo-500 text-slate-800 rounded-xl py-2.5 pl-10 pr-4 outline-none text-sm transition-all"
               />
-              <Mail className="absolute left-3 top-3 text-slate-500" size={16} />
+              <Mail className="absolute left-3.5 top-3 text-slate-400" size={16} />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               Password
             </label>
             <div className="relative">
@@ -105,14 +105,14 @@ const Register = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-slate-900 border border-slate-800 focus:border-indigo-500 text-slate-200 rounded-xl py-2.5 pl-10 pr-4 outline-none text-sm transition-all"
+                className="w-full bg-white border border-slate-200 focus:border-indigo-500 text-slate-800 rounded-xl py-2.5 pl-10 pr-4 outline-none text-sm transition-all"
               />
-              <KeyRound className="absolute left-3 top-3 text-slate-500" size={16} />
+              <KeyRound className="absolute left-3.5 top-3 text-slate-400" size={16} />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               Confirm Password
             </label>
             <div className="relative">
@@ -122,27 +122,27 @@ const Register = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-slate-900 border border-slate-800 focus:border-indigo-500 text-slate-200 rounded-xl py-2.5 pl-10 pr-4 outline-none text-sm transition-all"
+                className="w-full bg-white border border-slate-200 focus:border-indigo-500 text-slate-800 rounded-xl py-2.5 pl-10 pr-4 outline-none text-sm transition-all"
               />
-              <KeyRound className="absolute left-3 top-3 text-slate-500" size={16} />
+              <KeyRound className="absolute left-3.5 top-3 text-slate-400" size={16} />
             </div>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/15"
+            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-lg shadow-indigo-650/15"
           >
             <span>{loading ? 'Creating...' : 'Sign Up'}</span>
             <ArrowRight size={16} />
           </button>
         </form>
 
-        <div className="text-center text-sm text-slate-400">
+        <div className="text-center text-sm text-slate-500">
           Already have an account?{' '}
           <Link
             to={redirect !== '/' ? `/login?redirect=${redirect}` : '/login'}
-            className="text-indigo-400 hover:underline font-semibold"
+            className="text-indigo-600 hover:underline font-bold"
           >
             Sign In
           </Link>

@@ -396,6 +396,17 @@ const Navbar = () => {
                       </Link>
                     )}
 
+                    {(user.role === 'seller' || user.role === 'admin') && (
+                      <Link
+                        to="/seller"
+                        onClick={() => setProfileDropdownOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl text-indigo-650 dark:text-indigo-400"
+                      >
+                        <LayoutDashboard size={16} />
+                        <span>Seller Dashboard</span>
+                      </Link>
+                    )}
+
                     <button
                       onClick={handleLogout}
                       className="w-full flex items-center gap-2 px-3 py-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl text-left"
@@ -507,6 +518,16 @@ const Navbar = () => {
                   className="block px-2 py-1.5 text-purple-650 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/10 rounded-xl"
                 >
                   Admin Dashboard
+                </Link>
+              )}
+
+              {(user.role === 'seller' || user.role === 'admin') && (
+                <Link
+                  to="/seller"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-2 py-1.5 text-indigo-650 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 rounded-xl"
+                >
+                  Seller Dashboard
                 </Link>
               )}
 

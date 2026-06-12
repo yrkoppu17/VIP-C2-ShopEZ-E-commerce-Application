@@ -167,6 +167,65 @@ const updateOrderDeliveryStatus = async (req, res) => {
   }
 };
 
+// @desc    Get orders containing seller items
+// @route   GET /api/orders/seller
+// @access  Private/Seller
+const getSellerOrders = async (req, res) => {
+  try {
+    const products = await Product.find({ seller: req.user._id });
+    const productIds = products.map((p) => p._id.toString());
+
+    const orders = await Order.find({
+      'orderItems.product': { $in: productIds }
+    }).populate('user', 'name email');
+
+    const filteredOrders = orders.map((order) => {
+      const orderObj = order.toObject();
+      orderObj.orderItems = orderObj.orderItems.filter(
+        (item) => productIds.includes(item.product.toString())
+      );
+      return orderObj;
+    });
+
+    res.json(filteredOrders);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update delivery status for order (Seller)
+// @route   PUT /api/orders/seller/:id/fulfill
+// @access  Private/Seller
+const updateSellerOrderDeliveryStatus = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    const products = await Product.find({ seller: req.user._id });
+    const productIds = products.map((p) => p._id.toString());
+    const hasSellerProduct = order.orderItems.some(
+      (item) => productIds.includes(item.product.toString())
+    );
+
+    if (!hasSellerProduct && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized to fulfill this order' });
+    }
+
+    order.deliveryStatus = req.body.deliveryStatus || 'Shipped';
+    if (order.deliveryStatus === 'Delivered') {
+      order.deliveredAt = Date.now();
+    }
+
+    const updatedOrder = await order.save();
+    res.json(updatedOrder);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export {
   addOrderItems,
   getOrderById,
@@ -174,4 +233,6 @@ export {
   getOrders,
   updateOrderToPaid,
   updateOrderDeliveryStatus,
+  getSellerOrders,
+  updateSellerOrderDeliveryStatus,
 };

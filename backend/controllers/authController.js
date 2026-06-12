@@ -290,6 +290,155 @@ const blockUser = async (req, res) => {
   }
 };
 
+// @desc    Apply to become a seller
+// @route   POST /api/users/seller/apply
+// @access  Private
+const applySeller = async (req, res) => {
+  const { storeName, description, logo, banner } = req.body;
+  try {
+    const Seller = (await import('../models/Seller.js')).default;
+    const existingSeller = await Seller.findOne({ user: req.user._id });
+    if (existingSeller) {
+      if (existingSeller.status === 'approved') {
+        res.status(400);
+        return res.json({ message: 'You are already an approved seller' });
+      }
+      // Allow re-applying if rejected or update if pending
+      existingSeller.storeName = storeName || existingSeller.storeName;
+      existingSeller.description = description || existingSeller.description;
+      existingSeller.logo = logo || existingSeller.logo;
+      existingSeller.banner = banner || existingSeller.banner;
+      existingSeller.status = 'pending';
+      const updated = await existingSeller.save();
+      return res.status(200).json(updated);
+    }
+
+    const sellerInfo = await Seller.create({
+      user: req.user._id,
+      storeName,
+      description,
+      logo,
+      banner,
+      status: 'pending'
+    });
+
+    res.status(201).json(sellerInfo);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get seller profile
+// @route   GET /api/users/seller/profile
+// @access  Private
+const getSellerProfile = async (req, res) => {
+  try {
+    const Seller = (await import('../models/Seller.js')).default;
+    const sellerInfo = await Seller.findOne({ user: req.user._id });
+    if (sellerInfo) {
+      res.json(sellerInfo);
+    } else {
+      res.status(404).json({ message: 'Seller profile not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update seller profile
+// @route   PUT /api/users/seller/profile
+// @access  Private
+const updateSellerProfile = async (req, res) => {
+  const { storeName, description, logo, banner, payoutInfo } = req.body;
+  try {
+    const Seller = (await import('../models/Seller.js')).default;
+    const sellerInfo = await Seller.findOne({ user: req.user._id });
+    if (sellerInfo) {
+      sellerInfo.storeName = storeName || sellerInfo.storeName;
+      sellerInfo.description = description !== undefined ? description : sellerInfo.description;
+      sellerInfo.logo = logo || sellerInfo.logo;
+      sellerInfo.banner = banner || sellerInfo.banner;
+      if (payoutInfo) {
+        sellerInfo.payoutInfo = {
+          bankAccount: payoutInfo.bankAccount !== undefined ? payoutInfo.bankAccount : sellerInfo.payoutInfo.bankAccount,
+          routingNumber: payoutInfo.routingNumber !== undefined ? payoutInfo.routingNumber : sellerInfo.payoutInfo.routingNumber
+        };
+      }
+      const updated = await sellerInfo.save();
+      res.json(updated);
+    } else {
+      res.status(404).json({ message: 'Seller profile not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get all sellers (Admin)
+// @route   GET /api/users/admin/sellers
+// @access  Private/Admin
+const getSellers = async (req, res) => {
+  try {
+    const Seller = (await import('../models/Seller.js')).default;
+    const sellers = await Seller.find({}).populate('user', 'name email');
+    res.json(sellers);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Approve seller application
+// @route   PUT /api/users/admin/sellers/:id/approve
+// @access  Private/Admin
+const approveSeller = async (req, res) => {
+  try {
+    const Seller = (await import('../models/Seller.js')).default;
+    const sellerInfo = await Seller.findById(req.params.id);
+    if (!sellerInfo) {
+      return res.status(404).json({ message: 'Seller profile not found' });
+    }
+    sellerInfo.status = 'approved';
+    await sellerInfo.save();
+
+    // Update user role to seller
+    const user = await User.findById(sellerInfo.user);
+    if (user) {
+      user.role = 'seller';
+      await user.save();
+    }
+
+    res.json({ message: 'Seller approved successfully', seller: sellerInfo });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Reject seller application
+// @route   PUT /api/users/admin/sellers/:id/reject
+// @access  Private/Admin
+const rejectSeller = async (req, res) => {
+  try {
+    const Seller = (await import('../models/Seller.js')).default;
+    const sellerInfo = await Seller.findById(req.params.id);
+    if (!sellerInfo) {
+      return res.status(404).json({ message: 'Seller profile not found' });
+    }
+    sellerInfo.status = 'rejected';
+    await sellerInfo.save();
+
+    // Reset user role to customer if they were seller
+    const user = await User.findById(sellerInfo.user);
+    if (user && user.role === 'seller') {
+      user.role = 'customer';
+      await user.save();
+    }
+
+    res.json({ message: 'Seller application rejected', seller: sellerInfo });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export {
   authUser,
   registerUser,
@@ -301,5 +450,11 @@ export {
   deleteUserAddress,
   getUserWishlist,
   toggleUserWishlist,
-  blockUser
+  blockUser,
+  applySeller,
+  getSellerProfile,
+  updateSellerProfile,
+  getSellers,
+  approveSeller,
+  rejectSeller
 };

@@ -11,6 +11,7 @@ import Register from './pages/Register';
 import Checkout from './pages/Checkout';
 import MyOrders from './pages/MyOrders';
 import AdminDashboard from './pages/AdminDashboard';
+import SellerDashboard from './pages/SellerDashboard';
 import Wishlist from './pages/Wishlist';
 import ProfileDashboard from './pages/ProfileDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -64,6 +65,16 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <ProfileDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Protected Seller Routes */}
+                <Route
+                  path="/seller"
+                  element={
+                    <ProtectedRoute sellerOnly={true}>
+                      <SellerDashboard />
                     </ProtectedRoute>
                   }
                 />

@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const ProtectedRoute = ({ children, adminOnly = false }) => {
+const ProtectedRoute = ({ children, adminOnly = false, sellerOnly = false }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
@@ -20,6 +20,11 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
 
   if (adminOnly && user.role !== 'admin') {
     // Redirect to home if they are not admin
+    return <Navigate to="/" replace />;
+  }
+
+  if (sellerOnly && user.role !== 'seller' && user.role !== 'admin') {
+    // Redirect to home if they are not seller or admin
     return <Navigate to="/" replace />;
   }
 

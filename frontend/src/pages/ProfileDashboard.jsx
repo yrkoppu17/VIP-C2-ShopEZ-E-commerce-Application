@@ -56,6 +56,52 @@ const ProfileDashboard = () => {
   const [userReviews, setUserReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
 
+  // Seller portal states
+  const [sellerProfile, setSellerProfile] = useState(null);
+  const [sellerLoading, setSellerLoading] = useState(false);
+  const [storeForm, setStoreForm] = useState({
+    storeName: '',
+    description: '',
+    logo: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=800&auto=format&fit=crop&q=80',
+    banner: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&auto=format&fit=crop&q=80'
+  });
+  const [storeSubmitting, setStoreSubmitting] = useState(false);
+
+  const fetchSellerProfile = async () => {
+    setSellerLoading(true);
+    try {
+      const { data } = await api.get('/api/users/seller/profile');
+      setSellerProfile(data);
+      if (data) {
+        setStoreForm({
+          storeName: data.storeName || '',
+          description: data.description || '',
+          logo: data.logo || 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=800&auto=format&fit=crop&q=80',
+          banner: data.banner || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&auto=format&fit=crop&q=80'
+        });
+      }
+    } catch (err) {
+      console.error('No seller profile found');
+      setSellerProfile(null);
+    } finally {
+      setSellerLoading(false);
+    }
+  };
+
+  const handleStoreSubmit = async (e) => {
+    e.preventDefault();
+    setStoreSubmitting(true);
+    try {
+      const { data } = await api.post('/api/users/seller/apply', storeForm);
+      setSellerProfile(data);
+      showToast('Seller application submitted successfully!', 'success');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Application submission failed', 'error');
+    } finally {
+      setStoreSubmitting(false);
+    }
+  };
+
   // Load addresses
   const fetchAddresses = async () => {
     setAddressesLoading(true);
@@ -91,6 +137,7 @@ const ProfileDashboard = () => {
     setProfileEmail(user.email || '');
     fetchAddresses();
     fetchOrders();
+    fetchSellerProfile();
   }, [user]);
 
   // Profile Save
@@ -190,7 +237,8 @@ const ProfileDashboard = () => {
           {[
             { id: 'profile', label: 'My Settings', icon: User },
             { id: 'addresses', label: 'Saved Addresses', icon: MapPin },
-            { id: 'orders', label: 'Order History', icon: ClipboardList }
+            { id: 'orders', label: 'Order History', icon: ClipboardList },
+            { id: 'seller-portal', label: 'Seller Portal', icon: ShieldCheck }
           ].map((tab) => {
             const TabIcon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -444,6 +492,181 @@ const ProfileDashboard = () => {
                       </div>
                     );
                   })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 4: Seller Portal */}
+          {activeTab === 'seller-portal' && (
+            <div className="space-y-6">
+              <h3 className="text-xl font-bold flex items-center gap-2 border-b border-slate-100 dark:border-slate-750 pb-3">
+                <ShieldCheck size={18} className="text-indigo-650" />
+                <span>Seller Portal Onboarding</span>
+              </h3>
+
+              {sellerLoading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 size={24} className="animate-spin text-indigo-650" />
+                </div>
+              ) : !sellerProfile ? (
+                <div className="max-w-xl text-left">
+                  <p className="text-xs text-slate-550 dark:text-slate-400 mb-6 leading-relaxed">
+                    Apply to become a vendor on **shopEZ**. Once your store application is approved by our administration team, you will receive full access to the vendor analytics dashboard, order fulfillment registry, and catalog inventories.
+                  </p>
+
+                  <form onSubmit={handleStoreSubmit} className="space-y-4 text-xs font-semibold">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Store Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={storeForm.storeName}
+                        onChange={(e) => setStoreForm({ ...storeForm, storeName: e.target.value })}
+                        placeholder="e.g. My Premium Boutique"
+                        className="w-full bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 text-slate-850 dark:text-slate-100 rounded-xl p-3 outline-none focus:bg-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Store Description</label>
+                      <textarea
+                        required
+                        rows={3}
+                        value={storeForm.description}
+                        onChange={(e) => setStoreForm({ ...storeForm, description: e.target.value })}
+                        placeholder="Describe your brand, items, shipping policies..."
+                        className="w-full bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 text-slate-850 dark:text-slate-100 rounded-xl p-3 outline-none focus:bg-white resize-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Store Logo URL</label>
+                        <input
+                          type="url"
+                          value={storeForm.logo}
+                          onChange={(e) => setStoreForm({ ...storeForm, logo: e.target.value })}
+                          className="w-full bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 text-slate-850 dark:text-slate-100 rounded-xl p-3 outline-none focus:bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Store Banner URL</label>
+                        <input
+                          type="url"
+                          value={storeForm.banner}
+                          onChange={(e) => setStoreForm({ ...storeForm, banner: e.target.value })}
+                          className="w-full bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 text-slate-850 dark:text-slate-100 rounded-xl p-3 outline-none focus:bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={storeSubmitting}
+                      className="bg-indigo-650 hover:bg-indigo-500 text-white text-xs font-bold uppercase py-3 px-6 rounded-xl transition-all shadow shadow-indigo-600/10 flex items-center gap-1.5 mt-6"
+                    >
+                      {storeSubmitting ? <Loader2 size={12} className="animate-spin" /> : null}
+                      <span>Submit Application</span>
+                    </button>
+                  </form>
+                </div>
+              ) : sellerProfile.status === 'pending' ? (
+                <div className="max-w-xl text-left bg-slate-50 dark:bg-slate-850/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-750">
+                  <div className="flex items-center gap-2.5 text-amber-500 mb-4 font-bold text-sm">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                    <span>Application Status: Pending Review</span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-450 mb-4 leading-relaxed font-semibold">
+                    Thank you for applying! Your shop application for **{sellerProfile.storeName}** is currently awaiting review by an admin. We are verifying your details and will activate your account shortly.
+                  </p>
+                  <div className="text-xs space-y-1 bg-white dark:bg-slate-850 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+                    <p className="font-bold text-slate-800 dark:text-slate-200">Shop details submitted:</p>
+                    <p className="text-slate-500"><span className="font-bold">Name:</span> {sellerProfile.storeName}</p>
+                    <p className="text-slate-550 truncate"><span className="font-bold">Description:</span> {sellerProfile.description}</p>
+                  </div>
+                </div>
+              ) : sellerProfile.status === 'approved' ? (
+                <div className="max-w-xl text-left bg-emerald-50/50 dark:bg-emerald-950/10 p-6 rounded-2xl border border-emerald-150 text-xs">
+                  <div className="flex items-center gap-2.5 text-emerald-600 mb-4 font-bold text-sm">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                    <span>Application Status: Approved</span>
+                  </div>
+                  <p className="text-slate-550 dark:text-slate-400 mb-6 font-semibold leading-relaxed">
+                    Congratulations! Your brand store **{sellerProfile.storeName}** is fully active. You have been granted Seller privileges to customize your catalog listings and manage incoming product orders.
+                  </p>
+                  <button
+                    onClick={() => navigate('/seller')}
+                    className="bg-indigo-650 hover:bg-indigo-500 text-white font-bold uppercase py-3 px-6 rounded-xl transition-all shadow shadow-indigo-650/15"
+                  >
+                    Launch Seller Dashboard
+                  </button>
+                </div>
+              ) : (
+                <div className="max-w-xl text-left bg-rose-50/50 dark:bg-rose-950/10 p-6 rounded-2xl border border-rose-150">
+                  <div className="flex items-center gap-2.5 text-rose-600 mb-4 font-bold text-sm">
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                    <span>Application Status: Rejected</span>
+                  </div>
+                  <p className="text-xs text-slate-550 dark:text-slate-400 mb-6 font-semibold leading-relaxed">
+                    We regret to inform you that your vendor application was not approved. This can happen due to missing store policies or branding criteria. You are welcome to update your information and submit a new application below.
+                  </p>
+                  
+                  <form onSubmit={handleStoreSubmit} className="space-y-4 text-xs font-semibold">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Store Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={storeForm.storeName}
+                        onChange={(e) => setStoreForm({ ...storeForm, storeName: e.target.value })}
+                        placeholder="e.g. My Premium Boutique"
+                        className="w-full bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 text-slate-850 dark:text-slate-100 rounded-xl p-3 outline-none focus:bg-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Store Description</label>
+                      <textarea
+                        required
+                        rows={3}
+                        value={storeForm.description}
+                        onChange={(e) => setStoreForm({ ...storeForm, description: e.target.value })}
+                        placeholder="Describe your brand, items, shipping policies..."
+                        className="w-full bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 text-slate-850 dark:text-slate-100 rounded-xl p-3 outline-none focus:bg-white resize-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Store Logo URL</label>
+                        <input
+                          type="url"
+                          value={storeForm.logo}
+                          onChange={(e) => setStoreForm({ ...storeForm, logo: e.target.value })}
+                          className="w-full bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 text-slate-850 dark:text-slate-100 rounded-xl p-3 outline-none focus:bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Store Banner URL</label>
+                        <input
+                          type="url"
+                          value={storeForm.banner}
+                          onChange={(e) => setStoreForm({ ...storeForm, banner: e.target.value })}
+                          className="w-full bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 text-slate-850 dark:text-slate-100 rounded-xl p-3 outline-none focus:bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={storeSubmitting}
+                      className="bg-indigo-650 hover:bg-indigo-500 text-white text-xs font-bold uppercase py-3 px-6 rounded-xl transition-all shadow shadow-indigo-600/10 flex items-center gap-1.5 mt-6"
+                    >
+                      {storeSubmitting ? <Loader2 size={12} className="animate-spin" /> : null}
+                      <span>Resubmit Application</span>
+                    </button>
+                  </form>
                 </div>
               )}
             </div>

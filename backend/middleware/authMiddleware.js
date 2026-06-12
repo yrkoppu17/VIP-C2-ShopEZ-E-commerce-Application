@@ -45,4 +45,13 @@ const admin = (req, res, next) => {
   }
 };
 
-export { protect, admin };
+const seller = (req, res, next) => {
+  if (req.user && (req.user.role === 'seller' || req.user.role === 'admin')) {
+    next();
+  } else {
+    res.status(403); // Forbidden
+    res.json({ message: 'Not authorized as a seller' });
+  }
+};
+
+export { protect, admin, seller };

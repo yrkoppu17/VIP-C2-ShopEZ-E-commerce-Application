@@ -131,9 +131,80 @@ const getInventoryReport = async (req, res) => {
   }
 };
 
+// @desc    Get seller specific analytics
+// @route   GET /api/analytics/seller
+// @access  Private/Seller
+const getSellerAnalytics = async (req, res) => {
+  try {
+    const sellerId = req.user._id;
+
+    const products = await Product.find({ seller: sellerId });
+    const productIds = products.map((p) => p._id.toString());
+    const totalProductsCount = products.length;
+
+    const lowStockProducts = products.filter((p) => p.stockQuantity <= 5);
+    const lowStockProductsCount = lowStockProducts.length;
+
+    const orders = await Order.find({
+      paymentStatus: 'Paid',
+      'orderItems.product': { $in: productIds }
+    });
+
+    let totalRevenue = 0;
+    let totalUnitsSold = 0;
+
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlySales = {};
+    const monthlyUnits = {};
+
+    months.forEach((m) => {
+      monthlySales[m] = 0;
+      monthlyUnits[m] = 0;
+    });
+
+    orders.forEach((o) => {
+      const date = new Date(o.createdAt);
+      const mName = months[date.getMonth()];
+
+      o.orderItems.forEach((item) => {
+        if (productIds.includes(item.product.toString())) {
+          const itemRevenue = item.price * item.qty;
+          totalRevenue += itemRevenue;
+          totalUnitsSold += item.qty;
+
+          monthlySales[mName] = parseFloat((monthlySales[mName] + itemRevenue).toFixed(2));
+          monthlyUnits[mName] += item.qty;
+        }
+      });
+    });
+
+    const salesData = months.map((m) => monthlySales[m]);
+    const unitsData = months.map((m) => monthlyUnits[m]);
+
+    res.json({
+      totalProductsCount,
+      lowStockProductsCount,
+      totalRevenue: parseFloat(totalRevenue.toFixed(2)),
+      totalUnitsSold,
+      months,
+      salesData,
+      unitsData,
+      lowStockProducts: lowStockProducts.map(p => ({
+        name: p.name,
+        stockQuantity: p.stockQuantity,
+        category: p.category,
+        price: p.price
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export {
   getSalesAnalytics,
   getCategoryAnalytics,
   getTopProductsAnalytics,
-  getInventoryReport
+  getInventoryReport,
+  getSellerAnalytics
 };

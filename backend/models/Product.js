@@ -104,6 +104,11 @@ const productSchema = mongoose.Schema(
         ref: 'Product',
       }
     ],
+    seller: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
+    },
   },
   {
     timestamps: true,

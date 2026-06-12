@@ -72,6 +72,11 @@ const getProducts = async (req, res) => {
       sortObj.createdAt = -1; // default sort
     }
 
+    // 9. Seller filter
+    if (req.query.seller) {
+      queryObj.seller = req.query.seller;
+    }
+
     const products = await Product.find(queryObj).sort(sortObj);
     res.json(products);
   } catch (error) {
@@ -102,12 +107,18 @@ const getProductById = async (req, res) => {
 
 // @desc    Delete a product
 // @route   DELETE /api/products/:id
-// @access  Private/Admin
+// @access  Private/Admin/Seller
 const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
 
     if (product) {
+      // Security: If user is seller, verify they own the product
+      if (req.user.role === 'seller' && product.seller && product.seller.toString() !== req.user._id.toString()) {
+        res.status(403);
+        return res.json({ message: 'Not authorized to delete this product' });
+      }
+
       await Product.deleteOne({ _id: req.params.id });
       // Clean up reviews too
       await Review.deleteMany({ product: req.params.id });
@@ -124,10 +135,10 @@ const deleteProduct = async (req, res) => {
 
 // @desc    Create a product
 // @route   POST /api/products
-// @access  Private/Admin
+// @access  Private/Admin/Seller
 const createProduct = async (req, res) => {
   try {
-    const { name, price, description, category, stockQuantity, images } = req.body;
+    const { name, price, description, category, stockQuantity, images, brand } = req.body;
 
     const product = new Product({
       name: name || 'Sample Name',
@@ -136,8 +147,10 @@ const createProduct = async (req, res) => {
       category: category || 'Sample Category',
       stockQuantity: stockQuantity || 0,
       images: images || ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80'],
+      brand: brand || '',
       averageRating: 0,
       numReviews: 0,
+      seller: req.user.role === 'seller' ? req.user._id : undefined
     });
 
     const createdProduct = await product.save();
@@ -150,20 +163,27 @@ const createProduct = async (req, res) => {
 
 // @desc    Update a product
 // @route   PUT /api/products/:id
-// @access  Private/Admin
+// @access  Private/Admin/Seller
 const updateProduct = async (req, res) => {
   try {
-    const { name, price, description, category, stockQuantity, images } = req.body;
+    const { name, price, description, category, stockQuantity, images, brand } = req.body;
 
     const product = await Product.findById(req.params.id);
 
     if (product) {
+      // Security: If user is seller, verify they own the product
+      if (req.user.role === 'seller' && product.seller && product.seller.toString() !== req.user._id.toString()) {
+        res.status(403);
+        return res.json({ message: 'Not authorized to edit this product' });
+      }
+
       product.name = name !== undefined ? name : product.name;
       product.price = price !== undefined ? price : product.price;
       product.description = description !== undefined ? description : product.description;
       product.category = category !== undefined ? category : product.category;
       product.stockQuantity = stockQuantity !== undefined ? stockQuantity : product.stockQuantity;
       product.images = images !== undefined ? images : product.images;
+      product.brand = brand !== undefined ? brand : product.brand;
 
       const updatedProduct = await product.save();
       res.json(updatedProduct);

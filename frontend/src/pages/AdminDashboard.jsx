@@ -88,6 +88,9 @@ const AdminDashboard = () => {
     isActive: true
   });
 
+  // Sellers application states
+  const [sellers, setSellers] = useState([]);
+
   // Customer Orders view state
   const [selectedCustomerOrders, setSelectedCustomerOrders] = useState(null); // null or user object
 
@@ -118,11 +121,36 @@ const AdminDashboard = () => {
       const coupRes = await api.get('/api/coupons');
       setCoupons(coupRes.data);
 
+      // Fetch sellers
+      const sRes = await api.get('/api/users/admin/sellers');
+      setSellers(sRes.data);
+
     } catch (err) {
       console.error('Admin dashboard load error', err);
       showToast('Error loading dashboard records', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleApproveSeller = async (id) => {
+    try {
+      await api.put(`/api/users/admin/sellers/${id}/approve`);
+      showToast('Seller approved successfully!', 'success');
+      fetchDashboardData();
+    } catch (err) {
+      showToast('Failed to approve seller', 'error');
+    }
+  };
+
+  const handleRejectSeller = async (id) => {
+    if (!window.confirm('Reject this seller application?')) return;
+    try {
+      await api.put(`/api/users/admin/sellers/${id}/reject`);
+      showToast('Seller application rejected.', 'success');
+      fetchDashboardData();
+    } catch (err) {
+      showToast('Failed to reject seller', 'error');
     }
   };
 
@@ -409,7 +437,7 @@ const AdminDashboard = () => {
 
       {/* Tab controls */}
       <div className="flex border-b border-slate-200 dark:border-slate-800 mb-8 gap-4 overflow-x-auto no-scrollbar font-bold text-xs uppercase tracking-wider">
-        {['analytics', 'products', 'orders', 'customers', 'coupons'].map((tab) => (
+        {['analytics', 'products', 'orders', 'customers', 'coupons', 'sellers'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -773,6 +801,85 @@ const AdminDashboard = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* 6. TAB: Sellers Onboarding Approvals */}
+      {activeTab === 'sellers' && (
+        <div className="space-y-6">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Seller Onboarding Ledger</h3>
+
+          <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-750 overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs md:text-sm">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-850/80 border-b border-slate-200 dark:border-slate-750 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <th className="p-4">Store Name</th>
+                    <th className="p-4">Owner Name</th>
+                    <th className="p-4">Owner Email</th>
+                    <th className="p-4">Description</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4 text-right">Approval Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-750 text-slate-650 dark:text-slate-350 font-semibold">
+                  {sellers.map((sell) => (
+                    <tr key={sell._id} className="hover:bg-slate-50/40">
+                      <td className="p-4 font-bold text-slate-800 dark:text-slate-200">
+                        <div className="flex items-center gap-2">
+                          <img src={sell.logo} alt="" className="w-7 h-7 object-contain rounded-md bg-slate-50 border" />
+                          <span>{sell.storeName}</span>
+                        </div>
+                      </td>
+                      <td className="p-4 text-slate-750 dark:text-slate-250">{sell.user?.name || 'Unknown'}</td>
+                      <td className="p-4 text-slate-500">{sell.user?.email || 'N/A'}</td>
+                      <td className="p-4 max-w-xs truncate text-slate-450">{sell.description}</td>
+                      <td className="p-4">
+                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${
+                          sell.status === 'approved' 
+                            ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
+                            : sell.status === 'rejected' 
+                            ? 'bg-rose-50 text-rose-600 border-rose-100' 
+                            : 'bg-amber-50 text-amber-600 border-amber-100'
+                        }`}>
+                          {sell.status}
+                        </span>
+                      </td>
+                      <td className="p-4 text-right">
+                        {sell.status === 'pending' ? (
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleApproveSeller(sell._id)}
+                              className="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold uppercase py-1.5 px-3 rounded-lg flex items-center gap-0.5 shadow-sm"
+                            >
+                              <Check size={10} />
+                              <span>Approve</span>
+                            </button>
+                            <button
+                              onClick={() => handleRejectSeller(sell._id)}
+                              className="bg-rose-600 hover:bg-rose-500 text-white text-[10px] font-bold uppercase py-1.5 px-3 rounded-lg flex items-center gap-0.5 shadow-sm"
+                            >
+                              <X size={10} />
+                              <span>Reject</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 font-semibold text-xs pr-4 uppercase tracking-wider text-[10px]">Processed</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {sellers.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-slate-400 text-xs">
+                        No seller applications registered.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

@@ -93,7 +93,7 @@ Built with a strict **Model-View-Controller (MVC)** architecture, shopEZ showcas
 
 ### 📦 Order Management & Tracking
 - Full **order history** with itemized invoices
-- **6-step visual timeline tracker**: Placed → Confirmed → Packed → Shipped → Out for Delivery → Delivered
+- **6-step visual timeline tracker**: Placed -> Confirmed -> Packed -> Shipped -> Out for Delivery -> Delivered
 
 ### ⭐ Reviews & Ratings
 - **Verified Purchase** badge automatically applied when reviewing an ordered product
@@ -113,39 +113,39 @@ Built with a strict **Model-View-Controller (MVC)** architecture, shopEZ showcas
 
 ```
 E-Commerce Application/
-│
-├── backend/                     # Node.js + Express API
-│   ├── config/db.js             # MongoDB connection + in-memory fallback
-│   ├── controllers/             # Business logic (auth, products, orders, coupons)
-│   ├── middleware/              # JWT auth guards, error handler
-│   ├── models/                  # Mongoose schemas (User, Product, Order, Review, Coupon, Seller)
-│   ├── routes/                  # Express route definitions
-│   ├── utils/seeder.js          # Database seed script
-│   ├── uploads/                 # Local product image storage
-│   ├── server.js                # Express app entry point
-│   └── .env.example             # Environment variable template
-│
-├── frontend/                    # React 19 + Vite SPA
-│   └── src/
-│       ├── components/          # Navbar, ProductCard, ProtectedRoute
-│       ├── context/             # AuthContext, CartContext, ToastContext
-│       ├── pages/               # Home, ProductDetails, Cart, Wishlist, Checkout,
-│       │                        # MyOrders, ProfileDashboard, AdminDashboard,
-│       │                        # SellerDashboard, Login, Register
-│       ├── utils/               # Axios config, helpers
-│       ├── App.jsx              # Root route tree
-│       └── main.jsx             # ReactDOM bootstrap
-│
-└── document/                    # 📚 Generated PDF Project Documentation
-    ├── 1_Brainstorming_and_Ideation.pdf
-    ├── 2_Requirement_Analysis.pdf
-    ├── 3_Project_Design.pdf
-    ├── 4_Project_Planning.pdf
-    ├── 5_UAT_Testing.pdf
-    ├── 6_FSD_Project_Documentation.pdf
-    ├── Frontend_README.pdf
-    ├── Project_README.pdf
-    └── Project_Walkthrough.pdf
+|
++-- backend/                     # Node.js + Express API
+|   +-- config/db.js             # MongoDB connection + in-memory fallback
+|   +-- controllers/             # Business logic (auth, products, orders, coupons)
+|   +-- middleware/              # JWT auth guards, error handler
+|   +-- models/                  # Mongoose schemas (User, Product, Order, Review, Coupon, Seller)
+|   +-- routes/                  # Express route definitions
+|   +-- utils/seeder.js          # Database seed script
+|   +-- uploads/                 # Local product image storage
+|   +-- server.js                # Express app entry point
+|   +-- .env.example             # Environment variable template
+|
++-- frontend/                    # React 19 + Vite SPA
+|   +-- src/
+|       +-- components/          # Navbar, ProductCard, ProtectedRoute
+|       +-- context/             # AuthContext, CartContext, ToastContext
+|       +-- pages/               # Home, ProductDetails, Cart, Wishlist, Checkout,
+|       |                        # MyOrders, ProfileDashboard, AdminDashboard,
+|       |                        # SellerDashboard, Login, Register
+|       +-- utils/               # Axios config, helpers
+|       +-- App.jsx              # Root route tree
+|       +-- main.jsx             # ReactDOM bootstrap
+|
++-- document/                    # 📚 Generated PDF Project Documentation
+    +-- 1_Brainstorming_and_Ideation.pdf
+    +-- 2_Requirement_Analysis.pdf
+    +-- 3_Project_Design.pdf
+    +-- 4_Project_Planning.pdf
+    +-- 5_UAT_Testing.pdf
+    +-- 6_FSD_Project_Documentation.pdf
+    +-- Frontend_README.pdf
+    +-- Project_README.pdf
+    +-- Project_Walkthrough.pdf
 ```
 
 ---

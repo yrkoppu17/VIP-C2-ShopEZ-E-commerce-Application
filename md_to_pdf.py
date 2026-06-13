@@ -9,6 +9,8 @@ import os
 import sys
 import markdown
 from xhtml2pdf import pisa
+import logging
+logging.basicConfig(level=logging.WARNING)
 
 # ---------------------------------------------------------------------------
 # CSS — professional document styling for xhtml2pdf
@@ -235,8 +237,7 @@ def md_to_pdf_xhtml2pdf(md_path: str, pdf_path: str) -> None:
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    docs_dir   = os.path.join(script_dir, "docs")
-    pdf_dir    = os.path.join(docs_dir, "pdf")
+    pdf_dir    = os.path.join(script_dir, "document")
 
     os.makedirs(pdf_dir, exist_ok=True)
 
@@ -248,7 +249,7 @@ def main():
         if "node_modules" in root or ".git" in root:
             continue
         # Skip the output pdf directory itself to avoid processing temporary files
-        if pdf_dir in root:
+        if "document" in root or pdf_dir in root:
             continue
 
         for filename in files:
